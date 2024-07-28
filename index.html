@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stripe Checkout</title>
+  <script src="https://js.stripe.com/v3/"></script>
+</head>
+<body>
+  <div id="product-list">
+    <h2>Products</h2>
+  </div>
+  <button id="checkout-button">Checkout</button>
+
+  <script>
+    const stripe = Stripe('pk_test_KdDXjoQQJCYg9mud5asf0K6L00CW63ceoI');
+    const checkoutButton = document.getElementById('checkout-button');
+    let cart = [];
+
+    fetch('/products')
+      .then(response => response.json())
+      .then(products => {
+        const productList = document.getElementById('product-list');
+        products.forEach(product => {
+          const productDiv = document.createElement('div');
+          productDiv.innerHTML = `
+            <h3>${product.name}</h3>
+            <p>${product.description}</p>
+            <select id="price-select-${product.id}">
+              ${product.prices.map(price => `
+                <option value="${price.id}">
+                  ${price.currency.toUpperCase()} ${price.unit_amount / 100}
+                </option>`).join('')}
+            </select>
+            <button class="add-to-cart" data-product-id="${product.id}">Add to Cart</button>
+          `;
+          productList.appendChild(productDiv);
+        });
+
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+          button.addEventListener('click', () => {
+            const productId = button.getAttribute('data-product-id');
+            const priceSelect = document.getElementById(`price-select-${productId}`);
+            const priceId = priceSelect.value;
+            cart.push(priceId);
+            console.log(`Added price ${priceId} to cart`, cart);
+          });
+        });
+      });
+
+    checkoutButton.addEventListener('click', () => {
+      fetch('/create-checkout-session', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ priceIds: cart }),
+      })
+      .then(response => response.json())
+      .then(session => {
+        return stripe.redirectToCheckout({ sessionId: session.id });
+      })
+      .then(result => {
+        if (result.error) {
+          alert(result.error.message);
+        }
+      })
+      .catch(error => {
+        console.error('Error:', error);
+      });
+    });
+  </script>
+</body>
+</html>
