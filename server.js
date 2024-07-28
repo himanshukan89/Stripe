@@ -1,6 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const stripe = require('stripe')('sk_test_51EzjnHFCLYHYBAUJcUqABuxehHiu7JjJJDvM9rSoQGbsyfvtNl5WTeTddosLJypMG4feqwKoEB5mywOu99QX2JoN00S2OnNRAw');
+const stripe = require('stripe')('your stripe server key here');
 
 const app = express();
 app.use(bodyParser.json());
