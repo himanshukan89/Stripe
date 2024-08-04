@@ -13,7 +13,7 @@
   <button id="checkout-button">Checkout</button>
 
   <script>
-    const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
+    const stripe = Stripe(process.env.STRIPE_PUBLIC_KEY);
     const checkoutButton = document.getElementById('checkout-button');
     let cart = [];
 
